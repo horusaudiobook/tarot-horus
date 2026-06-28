@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Tarot Completo · 78 Arcanos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a0f0c;
+            background-image: radial-gradient(circle at 20% 30%, #2d1a14 0%, #0d0807 90%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Garamond', 'Georgia', serif;
+            padding: 1rem;
+        }
+
+        .game-container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(26, 15, 12, 0.7);
+            backdrop-filter: blur(4px);
+            border-radius: 3rem 3rem 2rem 2rem;
+            padding: 1.5rem 1rem 1.5rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8), 0 0 0 1px #b8936b55 inset;
+            border: 1px solid #dabf9a30;
+        }
+
+        .card-circle {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            aspect-ratio: 1/1;
+            margin: 0 auto 0.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .center-logo {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #1f130e;
+            box-shadow: 0 0 0 3px #b8936b70, 0 0 30px #000000aa;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 2px solid #dabf9a;
+            pointer-events: none;
+            transition: 0.3s;
+        }
+
+        .center-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
+        }
+
+        /* Cartas viradas (verso) */
+        .card-slot {
+            position: absolute;
+            width: 52px;
+            height: 76px;
+            border-radius: 8px;
+            background: #1a0f0c;
+            background-image: 
+                repeating-linear-gradient(45deg, #2d1a14 0px, #2d1a14 2px, #1a0f0c 2px, #1a0f0c 6px),
+                radial-gradient(circle at 30% 30%, #3d2a24, #0d0807);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.7), 0 0 0 1px #b68b6a55;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            cursor: default;
+            transform-origin: center;
+            border: 1px solid #ac8a6b60;
+            overflow: hidden;
+        }
+
+        /* Padrão de estrela no verso */
+        .card-slot::before {
+            content: "✦";
+            font-size: 1.2rem;
+            color: #b8936b60;
+            text-shadow: 0 0 10px #b8936b30;
+            position: absolute;
+            z-index: 1;
+        }
+
+        .card-slot::after {
+            content: "";
+            position: absolute;
+            width: 70%;
+            height: 70%;
+            border: 1px solid #b8936b30;
+            border-radius: 4px;
+        }
+
+        .card-slot.brilho {
+            box-shadow: 0 0 25px #f7d9b0, 0 0 50px #e9b68b, 0 0 0 2px #f7e3c9;
+            transition: 0.05s;
+            transform: scale(1.1);
+            border-color: #fadeb0;
+            z-index: 10;
+        }
+
+        .card-slot.dim {
+            opacity: 0.15;
+            filter: blur(1px);
+            transition: 0.3s;
+        }
+
+        /* CARTA REVELADA CENTRALIZADA */
+        .card-revealed {
+            position: absolute;
+            width: 150px;
+            height: 215px;
+            border-radius: 20px 8px 20px 8px;
+            background: #281b15;
+            background-image: linear-gradient(145deg, #35241d, #1b110e);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.9), 0 0 0 2px #c8a888;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #f2e0cd;
+            border: 1px solid #dbbd9e;
+            transition: 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+            overflow: hidden;
+            z-index: 30;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8) rotateY(90deg);
+        }
+
+        .card-revealed img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 18px 6px 18px 6px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+
+        .card-revealed .text-overlay {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.45);
+            padding: 0.3rem 0.5rem;
+            border-radius: 16px;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+        }
+
+        .card-revealed.show {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, -50%) scale(1) rotateY(0deg);
+        }
+
+        .card-revealed .numero-grande {
+            font-size: 1.5rem;
+            font-weight: 200;
+            color: #dfc5aa;
+            text-shadow: 0 0 12px #b38b6b;
+        }
+
+        .card-revealed .nome {
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: 0.08rem;
+            margin: 0.1rem 0;
+            text-transform: uppercase;
+            background: linear-gradient(180deg, #f5e0cc, #dbb795);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px #cb9f7a50;
+        }
+
+        /* LEGENDA FORA DA IMAGEM */
+        .legend-container {
+            max-width: 650px;
+            margin: 0.2rem auto 0.5rem;
+            padding: 0 0.5rem;
+            text-align: center;
+        }
+
+        .legend-under-card {
+            font-size: 0.9rem;
+            color: #cbb09b;
+            text-align: center;
+            font-style: italic;
+            letter-spacing: 0.04rem;
+            background: rgba(26, 15, 12, 0.7);
+            padding: 0.4rem 1.2rem;
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+            border: 1px solid #b8936b40;
+            min-height: 2.4rem;
+            display: inline-block;
+            width: 100%;
+            transition: opacity 0.4s;
+        }
+
+        .legend-under-card .highlight {
+            color: #f0d5b0;
+            font-weight: 600;
+        }
+
+        /* BARRA DE PERGUNTAS */
+        .question-bar {
+            background: #1f130ecc;
+            backdrop-filter: blur(10px);
+            border-radius: 60px;
+            padding: 0.5rem 1.2rem 0.5rem 1.8rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem 0.3rem;
+            border: 1px solid #b8936b70;
+            margin-top: 0.2rem;
+            box-shadow: 0 8px 18px #00000055;
+        }
+
+        .question-bar input {
+            flex: 2 1 200px;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid #b48b6b;
+            padding: 0.6rem 0.3rem;
+            font-size: 0.95rem;
+            color: #f1dec9;
+            outline: none;
+            font-family: 'Segoe UI', 'Garamond', serif;
+            letter-spacing: 0.04rem;
+            min-width: 120px;
+        }
+
+        .question-bar input::placeholder {
+            color: #b69478b0;
+            font-style: italic;
+            font-weight: 300;
+        }
+
+        .question-bar button {
+            background: #dab38b;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #1f130e;
+            letter-spacing: 0.1rem;
+            box-shadow: 0 4px 0 #7a5d47;
+            transition: 0.1s ease;
+            cursor: pointer;
+            font-family: 'Garamond', serif;
+            border: 1px solid #f5dfca;
+            text-transform: uppercase;
+        }
+
+        .question-bar button:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #5d4433;
+        }
+
+        .question-bar button:disabled {
+            opacity: 0.4;
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #5d4433;
+            pointer-events: none;
+        }
+
+        .footer {
+            margin-top: 0.5rem;
+            color: #7f624b;
+            font-size: 0.65rem;
+            text-align: center;
+            letter-spacing: 0.1rem;
+        }
+
+        @media (max-width: 680px) {
+            .card-slot {
+                width: 38px;
+                height: 55px;
+                border-radius: 6px;
+            }
+            .card-slot::before {
+                font-size: 0.8rem;
+            }
+            .card-revealed {
+                width: 110px;
+                height: 160px;
+            }
+            .card-revealed .nome { font-size: 0.9rem; }
+            .card-revealed .numero-grande { font-size: 1.1rem; }
+            .center-logo { width: 55px; height: 55px; }
+            .legend-under-card {
+                font-size: 0.75rem;
+                padding: 0.3rem 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <div class="card-circle" id="cardCircle">
+        <!-- Logo central -->
+        <div class="center-logo" id="centerLogo">
+            <img id="logoImg" src="https://yt3.googleusercontent.com/gZEkIBQIXwxDoMvQBVov4byaAkLDcmFMAHYBFr2ztlTRMVcmx2HvnvVjHen3eD8D2Yh95J63JQ=s160-c-k-c0x00ffffff-no-rj" alt="Logo">
+        </div>
+
+        <!-- Carta revelada centralizada -->
+        <div class="card-revealed" id="cardRevealed">
+            <img id="revealedImage" src="" alt="carta">
+            <div class="text-overlay">
+                <div class="numero-grande" id="revealedNumber">0</div>
+                <div class="nome" id="revealedName">O Louco</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LEGENDA -->
+    <div class="legend-container">
+        <div class="legend-under-card" id="legendUnderCard">
+            ✧ <span class="highlight">Toque em "TIRAR CARTA"</span> e veja o oráculo
+        </div>
+    </div>
+
+    <!-- Barra de perguntas -->
+    <div class="question-bar">
+        <input type="text" id="questionInput" placeholder="✧  Faça sua pergunta..." maxlength="100">
+        <button id="drawButton">⚡ TIRAR CARTA</button>
+    </div>
+
+    <div class="footer">— 22 Arcanos Maiores + 56 Menores · imagens ilustrativas —</div>
+</div>
+
+<script>
+    (function(){
+        const logoUrl = "https://yt3.googleusercontent.com/gZEkIBQIXwxDoMvQBVov4byaAkLDcmFMAHYBFr2ztlTRMVcmx2HvnvVjHen3eD8D2Yh95J63JQ=s160-c-k-c0x00ffffff-no-rj";
+
+        // ========== TODOS OS 78 ARCENOS ==========
+        const tarotCards = [
+            // ----- ARCANOS MAIORES (0-21) -----
+            { numero: 0,  nome: "O Louco",     significado: "Novo começo · espontaneidade", img: "https://i.ibb.co/MkZBR6wD/00-o-louco.jpg" },
+            { numero: 1,  nome: "O Mago",      significado: "Manifestação · poder · foco", img: "https://i.ibb.co/F4140PDC/01-o-mago.jpg" },
+            { numero: 2,  nome: "A Sacerdotisa", significado: "Intuição · mistério · sabedoria", img: "https://i.ibb.co/WpDwGFRj/02-a-sacerdotisa.jpg" },
+            { numero: 3,  nome: "A Imperatriz", significado: "Criatividade · abundância", img: "https://i.ibb.co/VpLrGRrX/03-a-imperatriz.jpg" },
+            { numero: 4,  nome: "O Imperador", significado: "Estrutura · autoridade", img: "https://i.ibb.co/rGwxtZCK/04-o-imperador.jpg" },
+            { numero: 5,  nome: "O Hierofante", significado: "Tradição · ensino · espiritualidade", img: "https://i.ibb.co/d4M4r3kT/05-o-papa.jpg" },
+            { numero: 6,  nome: "Os Enamorados", significado: "Amor · escolhas · harmonia", img: "https://i.ibb.co/xqbPvLxF/06-os-enamorados.jpg" },
+            { numero: 7,  nome: "O Carro",     significado: "Determinação · vitória", img: "https://i.ibb.co/9ktLhb2Q/07-o-carro.jpg" },
+            { numero: 8,  nome: "A Força",     significado: "Coragem · compaixão", img: "https://i.ibb.co/mrwYXtJg/08-a-forca.jpg" },
+            { numero: 9,  nome: "O Eremita",   significado: "Busca · introspecção", img: "https://i.ibb.co/pvLwnL4K/09-o-eremita.jpg" },
+            { numero: 10, nome: "A Roda da Fortuna", significado: "Destino · mudança · ciclo", img: "https://i.ibb.co/LzD0WYbw/10-a-roda-da-fortuna.jpg" },
+            { numero: 11, nome: "A Justiça",   significado: "Verdade · equilíbrio", img: "https://i.ibb.co/27vCk1Zt/11-a-justica.jpg" },
+            { numero: 12, nome: "O Enforcado", significado: "Render-se · nova perspectiva", img: "https://i.ibb.co/q3tSQT2k/12-o-enforcado.jpg" },
+            { numero: 13, nome: "A Morte",     significado: "Transformação · renascimento", img: "https://i.ibb.co/PGT42KJs/13-a-morte.jpg" },
+            { numero: 14, nome: "A Temperança", significado: "Equilíbrio · paciência", img: "https://i.ibb.co/DfV7N1GG/14-a-temperanca.jpg" },
+            { numero: 15, nome: "O Diabo",     significado: "Autoconsciência · libertação", img: "https://i.ibb.co/LXHkChdL/15-o-diabo.jpg" },
+            { numero: 16, nome: "A Torre",     significado: "Revelação · ruptura", img: "https://i.ibb.co/wrbF4Jpp/16-a-torre.jpg" },
+            { numero: 17, nome: "A Estrela",   significado: "Esperança · inspiração", img: "https://i.ibb.co/mmnxQdJ/17-a-estrela.jpg" },
+            { numero: 18, nome: "A Lua",       significado: "Inconsciente · ilusão", img: "https://i.ibb.co/b5fSw4jZ/18-a-lua.jpg" },
+            { numero: 19, nome: "O Sol",       significado: "Alegria · sucesso · clareza", img: "https://i.ibb.co/ksbSf6fS/19-o-sol.jpg" },
+            { numero: 20, nome: "O Julgamento", significado: "Despertar · perdão", img: "https://i.ibb.co/nVfzpJN/20-o-julgamento.jpg" },
+            { numero: 21, nome: "O Mundo",     significado: "Realização · completude", img: "https://i.ibb.co/39jgq90X/21-o-mundo.jpg" },
+
+            // ----- ARCANOS MENORES (PAUS) -----
+            { numero: "A♣", nome: "Ás de Paus", significado: "Início · criatividade", img: "https://i.ibb.co/gFMsyTzg/01-as-de-paus.jpg" },
+            { numero: "2♣", nome: "Dois de Paus", significado: "Decisão · planejamento", img: "https://i.ibb.co/JWxwkJGk/02-dois-de-paus.jpg" },
+            { numero: "3♣", nome: "Três de Paus", significado: "Expansão · visão", img: "https://i.ibb.co/RT7WLnrZ/03-tres-de-paus.jpg" },
+            { numero: "4♣", nome: "Quatro de Paus", significado: "Celebração · estabilidade", img: "https://i.ibb.co/0R0gjFTn/04-quatro-de-paus.jpg" },
+            { numero: "5♣", nome: "Cinco de Paus", significado: "Conflito · competição", img: "https://i.ibb.co/B2WrRJ13/05-cinco-de-paus.jpg" },
+            { numero: "6♣", nome: "Seis de Paus", significado: "Vitória · reconhecimento", img: "https://i.ibb.co/wFS2FbCM/06-seis-de-paus.jpg" },
+            { numero: "7♣", nome: "Sete de Paus", significado: "Coragem · defesa", img: "https://i.ibb.co/S4M30Jsg/07-sete-de-paus.jpg" },
+            { numero: "8♣", nome: "Oito de Paus", significado: "Movimento · velocidade", img: "https://i.ibb.co/WNVD72ML/08-oito-de-paus.jpg" },
+            { numero: "9♣", nome: "Nove de Paus", significado: "Resiliência · persistência", img: "https://i.ibb.co/8Lpg2vvN/09-nove-de-paus.jpg" },
+            { numero: "10♣", nome: "Dez de Paus", significado: "Fardo · responsabilidade", img: "https://i.ibb.co/6k7R9KG/10-dez-de-paus.jpg" },
+            { numero: "P♣", nome: "Pajem de Paus", significado: "Entusiasmo · descoberta", img: "https://i.ibb.co/Ng0Scp1T/11-valete-de-paus.jpg" },
+            { numero: "C♣", nome: "Cavaleiro de Paus", significado: "Ação · aventura", img: "https://i.ibb.co/zh9sJhqc/12-cavaleiro-de-paus.jpg" },
+            { numero: "R♣", nome: "Rainha de Paus", significado: "Confiança · criatividade", img: "https://i.ibb.co/Ld9j4Qcy/13-rainha-de-paus.jpg" },
+            { numero: "K♣", nome: "Rei de Paus", significado: "Liderança · visão", img: "https://i.ibb.co/x88d45Pf/14-rei-de-paus.jpg" },
+
+            // ----- ARCANOS MENORES (COPAS) -----
+            { numero: "A♥", nome: "Ás de Copas", significado: "Amor · emoção · intuição", img: "https://i.ibb.co/QvwLfRYz/01-as-de-copas.jpg" },
+            { numero: "2♥", nome: "Dois de Copas", significado: "União · parceria", img: "https://i.ibb.co/SXLWM8pD/02-dois-de-copas.jpg" },
+            { numero: "3♥", nome: "Três de Copas", significado: "Alegria · celebração", img: "https://i.ibb.co/fzzWmSST/03-tres-de-copas.jpg" },
+            { numero: "4♥", nome: "Quatro de Copas", significado: "Contemplação · apatia", img: "https://i.ibb.co/rRYPcbF1/04-quatro-de-copas.jpg" },
+            { numero: "5♥", nome: "Cinco de Copas", significado: "Perda · luto", img: "https://i.ibb.co/VY7PhXmZ/05-cinco-de-copas.jpg" },
+            { numero: "6♥", nome: "Seis de Copas", significado: "Nostalgia · memórias", img: "https://i.ibb.co/6RgBkVJ7/06-seis-de-copas.jpg" },
+            { numero: "7♥", nome: "Sete de Copas", significado: "Ilusão · escolhas", img: "https://i.ibb.co/r2zdWby6/07-sete-de-copas.jpg" },
+            { numero: "8♥", nome: "Oito de Copas", significado: "Desapego · busca", img: "https://i.ibb.co/RkqhsMPG/08-oito-de-copas.jpg" },
+            { numero: "9♥", nome: "Nove de Copas", significado: "Realização · satisfação", img: "https://i.ibb.co/STCxxNr/09-nove-de-copas.jpg" },
+            { numero: "10♥", nome: "Dez de Copas", significado: "Felicidade · harmonia", img: "https://i.ibb.co/Mk70PS1N/10-dez-de-copas.jpg" },
+            { numero: "P♥", nome: "Pajem de Copas", significado: "Sensibilidade · novidade", img: "https://i.ibb.co/ym3x8jPH/11-valete-de-copas.jpg" },
+            { numero: "C♥", nome: "Cavaleiro de Copas", significado: "Romance · idealismo", img: "https://i.ibb.co/7tJMgrVb/12-cavaleiro-de-copas.jpg" },
+            { numero: "R♥", nome: "Rainha de Copas", significado: "Compaixão · empatia", img: "https://i.ibb.co/YBDfrVwZ/13-rainha-de-copas.jpg" },
+            { numero: "K♥", nome: "Rei de Copas", significado: "Emoção · equilíbrio", img: "https://i.ibb.co/5hnhWQzD/14-rei-de-copas.jpg" },
+
+            // ----- ARCANOS MENORES (ESPADAS) -----
+            { numero: "A♠", nome: "Ás de Espadas", significado: "Clareza · verdade · razão", img: "https://i.ibb.co/1t8FqGJ4/01-as-de-espadas.jpg" },
+            { numero: "2♠", nome: "Dois de Espadas", significado: "Decisão · impasse", img: "https://i.ibb.co/gbxBdfSr/02-dois-de-espadas.jpg" },
+            { numero: "3♠", nome: "Três de Espadas", significado: "Dor · separação", img: "https://i.ibb.co/HLrVn28j/03-tres-de-espadas.jpg" },
+            { numero: "4♠", nome: "Quatro de Espadas", significado: "Descanso · recuperação", img: "https://i.ibb.co/bfJPyMf/04-quatro-de-espadas.jpg" },
+            { numero: "5♠", nome: "Cinco de Espadas", significado: "Conflito · derrota", img: "https://i.ibb.co/Vcmqv6bq/05-cinco-de-espadas.jpg" },
+            { numero: "6♠", nome: "Seis de Espadas", significado: "Transição · cura", img: "https://i.ibb.co/xtD1XGmM/06-seis-de-espadas.jpg" },
+            { numero: "7♠", nome: "Sete de Espadas", significado: "Estratégia · engano", img: "https://i.ibb.co/h1D47fPH/07-sete-de-espadas.jpg" },
+            { numero: "8♠", nome: "Oito de Espadas", significado: "Restrição · medo", img: "https://i.ibb.co/Kj3H21vC/08-oito-de-espadas.jpg" },
+            { numero: "9♠", nome: "Nove de Espadas", significado: "Ansiedade · preocupação", img: "https://i.ibb.co/FbNNkwwv/09-nove-de-espadas.jpg" },
+            { numero: "10♠", nome: "Dez de Espadas", significado: "Fim · renovação", img: "https://i.ibb.co/d9Ldm5K/10-dez-de-espadas.jpg" },
+            { numero: "P♠", nome: "Pajem de Espadas", significado: "Curiosidade · observação", img: "https://i.ibb.co/YBQ2PBT4/11-valete-de-espadas.jpg" },
+            { numero: "C♠", nome: "Cavaleiro de Espadas", significado: "Determinação · ação", img: "https://i.ibb.co/DP8L2W2z/12-cavaleiro-de-espadas.jpg" },
+            { numero: "R♠", nome: "Rainha de Espadas", significado: "Intelecto · independência", img: "https://i.ibb.co/5hW4R26w/13-rainha-de-espadas.jpg" },
+            { numero: "K♠", nome: "Rei de Espadas", significado: "Autoridade · justiça", img: "https://i.ibb.co/bgS12w2n/14-rei-de-espadas.jpg" },
+
+            // ----- ARCANOS MENORES (OUROS) -----
+            { numero: "A♦", nome: "Ás de Ouros", significado: "Oportunidade · prosperidade", img: "https://i.ibb.co/27zhcXvq/01-as-de-ouros.jpg" },
+            { numero: "2♦", nome: "Dois de Ouros", significado: "Equilíbrio · adaptação", img: "https://i.ibb.co/QFwqhkSB/02-dois-de-ouros.jpg" },
+            { numero: "3♦", nome: "Três de Ouros", significado: "Colaboração · maestria", img: "https://i.ibb.co/zhzHkdJT/03-tres-de-ouros.jpg" },
+            { numero: "4♦", nome: "Quatro de Ouros", significado: "Segurança · controle", img: "https://i.ibb.co/TM5TJCm0/04-quatro-de-ouros.jpg" },
+            { numero: "5♦", nome: "Cinco de Ouros", significado: "Dificuldade · escassez", img: "https://i.ibb.co/rRKP8bDs/05-cinco-de-ouros.jpg" },
+            { numero: "6♦", nome: "Seis de Ouros", significado: "Generosidade · partilha", img: "https://i.ibb.co/gM7kF8sM/06-seis-de-ouros.jpg" },
+            { numero: "7♦", nome: "Sete de Ouros", significado: "Paciência · investimento", img: "https://i.ibb.co/qLrLszbz/07-sete-de-ouros.jpg" },
+            { numero: "8♦", nome: "Oito de Ouros", significado: "Dedicação · habilidade", img: "https://i.ibb.co/1Jmhp9tY/08-oito-de-ouros.jpg" },
+            { numero: "9♦", nome: "Nove de Ouros", significado: "Abundância · autonomia", img: "https://i.ibb.co/whVNwnyD/09-nove-de-ouros.jpg" },
+            { numero: "10♦", nome: "Dez de Ouros", significado: "Legado · estabilidade", img: "https://i.ibb.co/G42mcJ2S/10-dez-de-ouros.jpg" },
+            { numero: "P♦", nome: "Pajem de Ouros", significado: "Aprendizado · prática", img: "https://i.ibb.co/kVmc0qvd/11-valete-de-ouros.jpg" },
+            { numero: "C♦", nome: "Cavaleiro de Ouros", significado: "Responsabilidade · método", img: "https://i.ibb.co/tP3C7xfz/12-cavaleiro-de-ouros.jpg" },
+            { numero: "R♦", nome: "Rainha de Ouros", significado: "Abundância · praticidade", img: "https://i.ibb.co/KzW0NmhB/13-rainha-de-ouros.jpg" },
+            { numero: "K♦", nome: "Rei de Ouros", significado: "Segurança · prosperidade", img: "https://i.ibb.co/wFpM9v84/14-rei-de-ouros.jpg" }
+        ];
+
+        // referências
+        const circle = document.getElementById('cardCircle');
+        const revealedCard = document.getElementById('cardRevealed');
+        const revealedImage = document.getElementById('revealedImage');
+        const revealedNumber = document.getElementById('revealedNumber');
+        const revealedName = document.getElementById('revealedName');
+        const legendUnderCard = document.getElementById('legendUnderCard');
+        const drawBtn = document.getElementById('drawButton');
+        const questionInput = document.getElementById('questionInput');
+        const logoImg = document.getElementById('logoImg');
+
+        logoImg.src = logoUrl;
+
+        let slots = [];
+        let animationRunning = false;
+        let timeoutId = null;
+
+        function buildCircle() {
+            const total = tarotCards.length;
+            const radius = 270;
+            const centerX = 325;
+            const centerY = 325;
+
+            const existingSlots = circle.querySelectorAll('.card-slot');
+            existingSlots.forEach(el => el.remove());
+            slots = [];
+
+            for (let i = 0; i < total; i++) {
+                const angle = (i / total) * 2 * Math.PI - Math.PI/2;
+                const x = centerX + radius * Math.cos(angle) - 26;
+                const y = centerY + radius * Math.sin(angle) - 38;
+
+                const slot = document.createElement('div');
+                slot.className = 'card-slot';
+                slot.dataset.index = i;
+                slot.style.left = x + 'px';
+                slot.style.top = y + 'px';
+
+                circle.insertBefore(slot, circle.lastElementChild);
+                slots.push(slot);
+            }
+        }
+        buildCircle();
+
+        function startRoulette(callback) {
+            if (animationRunning) return;
+            animationRunning = true;
+            drawBtn.disabled = true;
+            questionInput.disabled = true;
+
+            revealedCard.classList.remove('show');
+            legendUnderCard.innerHTML = '🌀 <span class="highlight">As cartas estão girando...</span>';
+
+            slots.forEach(s => s.classList.remove('brilho', 'dim'));
+
+            const targetIndex = Math.floor(Math.random() * tarotCards.length);
+            let step = 0;
+            const totalSteps = 25 + Math.floor(Math.random() * 20);
+
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+
+            function stepBrilho() {
+                slots.forEach(s => s.classList.remove('brilho'));
+
+                const idx = step % slots.length;
+                slots[idx].classList.add('brilho');
+
+                slots.forEach((s, i) => {
+                    if (i !== idx) s.classList.add('dim');
+                });
+
+                step++;
+
+                if (step < totalSteps) {
+                    const delay = 30 + (step / totalSteps) * 100;
+                    timeoutId = setTimeout(stepBrilho, delay);
+                } else {
+                    slots.forEach(s => s.classList.remove('brilho', 'dim'));
+                    slots[targetIndex].classList.add('brilho');
+
+                    revealCard(targetIndex);
+
+                    animationRunning = false;
+                    drawBtn.disabled = false;
+                    questionInput.disabled = false;
+                    timeoutId = null;
+
+                    if (callback) callback(targetIndex);
+                }
+            }
+
+            stepBrilho();
+        }
+
+        function revealCard(index) {
+            const card = tarotCards[index];
+            revealedImage.src = card.img;
+            revealedImage.alt = card.nome;
+            revealedNumber.textContent = card.numero;
+            revealedName.textContent = card.nome;
+
+            revealedCard.classList.add('show');
+            legendUnderCard.innerHTML = `✦ <span class="highlight">${card.nome}</span> · ${card.significado}`;
+        }
+
+        function drawCard() {
+            if (animationRunning) return;
+
+            const pergunta = questionInput.value.trim();
+            if (pergunta === '') {
+                legendUnderCard.innerHTML = '✧ <span class="highlight">Escreva sua pergunta</span> antes de tirar a carta.';
+                return;
+            }
+
+            legendUnderCard.innerHTML = `⚡ <span class="highlight">Pergunta:</span> “${pergunta}” · O oráculo responde...`;
+
+            startRoulette((index) => {
+                const card = tarotCards[index];
+                legendUnderCard.innerHTML = `✦ <span class="highlight">${card.nome}</span> · ${card.significado} <span style="font-size:0.7rem;opacity:0.7;">(pergunta: "${pergunta}")</span>`;
+            });
+        }
+
+        drawBtn.addEventListener('click', drawCard);
+
+        questionInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                drawCard();
+            }
+        });
+
+        window.addEventListener('beforeunload', function() {
+            if (timeoutId) clearTimeout(timeoutId);
+        });
+    })();
+</script>
+</body>
+</html>
